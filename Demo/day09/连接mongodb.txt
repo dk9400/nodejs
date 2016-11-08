@@ -1,0 +1,118 @@
+安装mongoose
+npm install mongoose -save
+
+在app.js中导入mongoose模块
+
+a、导入mongoose模块：   
+
+1 var mongoose = require('mongoose');
+  b、创建数据库连接 
+
+mongoose.connect('mongodb://localhost/myDB') //连接本地数据库
+ 4、在项目根目录下新建文件夹schemas，这个是数据集模块，在模块下新建users.js文件
+
+复制代码
+ 1 var mongoose = require('mongoose');
+ 2 
+ 3 //申明一个mongoons对象
+ 4 var UsersSchema = new mongoose.Schema({
+ 5     name: String,
+ 6     paw: String,
+ 7     meta: { 
+ 8         createAt: {
+ 9             type: Date,
+10             default: Date.now()
+11         },
+12         updateAt: {
+13             type: Date,
+14             default: Date.now()
+15         }
+16     }
+17 })
+18 
+19 //每次执行都会调用,时间更新操作
+20 UsersSchema.pre('save', function(next) {
+21     if(this.isNew) {
+22         this.meta.createAt = this.meta.updateAt = Date.now();
+23     }else {
+24         this.meta.updateAt = Date.now();
+25     }
+26 
+27     next();
+28 })
+29 
+30 //查询的静态方法
+31 UsersSchema.statics = {
+32     fetch: function(cb) { //查询所有数据
+33         return this
+34           .find()
+35           .sort('meta.updateAt') //排序
+36           .exec(cb) //回调
+37     },
+38     findById: function(id, cb) { //根据id查询单条数据
+39         return this
+40           .findOne({_id: id})          
+41           .exec(cb)
+42     }
+43 }
+44 
+45 //暴露出去的方法
+46 module.exports = UsersSchema
+复制代码
+ 
+
+ 
+
+ 5、在根目录新增modules文件，这个是数据模型模块，在模块下新增users.js文件
+
+1 var mongoose = require('mongoose')
+2 var UsersSchema = require('../schemas/users') //拿到导出的数据集模块
+3 var Users = mongoose.model('Users', UsersSchema) // 编译生成Movie 模型
+4 
+5 module.exports = Users
+ 
+
+ 6、在routes文件中的users.js文件中添加路由控制器代码
+
+复制代码
+ 1 var express = require('express');
+ 2 var mongoose = require('mongoose');//导入mongoose模块
+ 3 
+ 4 var Users = require('../models/users');//导入模型数据模块
+ 5 
+ 6 var router = express.Router();
+ 7 
+ 8 /* GET users listing. */
+ 9 router.get('/', function(req, res, next) {
+10   res.send('respond with a resource');
+11 });
+12 
+13 //查询所有用户数据
+14 router.get('/users', function(req, res, next) {
+15     Users.fetch(function(err, users) {
+16         if(err) {
+17             console.log(err);
+18         }        
+19         res.render('users',{title: '用户列表', users: users})  //这里也可以json的格式直接返回数据res.json({data: users});
+20     })
+21 })
+22 module.exports = router;
+复制代码
+ 
+
+ 7、在views文件下新增users.jade
+
+复制代码
+1 extends layout
+2 
+3 block content
+4   h1= title //jade取值方式
+5   ul
+6     each user in users //jade模版的遍历方式
+7       li
+8         h4 #{user.name}    
+9         span #{user.paw}
+复制代码
+ 
+
+8、最后在浏览器中打开网址：http://localhost:3000/users/users，查看效果。到这里一个从数据库到前端展现的项目就完成了。

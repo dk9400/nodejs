@@ -1,0 +1,15 @@
+express3.0已经把layout移除了，install express-partials 可解决问题。
+
+在app.js 里面引用 express-partials，引用方法：
+
+   1.添加引用 var partials = require('express-partials');
+
+   2.在 app.set('view engine', 'ejs'); 下面添加 app.use(partials());
+
+在需要引用模板的地方调用 layout:'模版名称' 示例
+app.get('/reg', function (req, res) {
+  res.render('reg', {
+    title: '用户注册',
+    layout: 'template'
+  });    
+});
