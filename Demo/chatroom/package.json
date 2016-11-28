@@ -1,0 +1,15 @@
+{
+  "name": "chatroom",
+  "version": "1.0.0",
+  "description": "A simple chat web app.",
+  "main": "server.js",
+  "dependencies":{
+	 "express": "2.5.1",
+	 "socket.io": "0.9.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "wyt",
+  "license": "ISC"
+}
